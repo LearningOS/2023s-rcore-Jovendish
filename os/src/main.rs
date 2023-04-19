@@ -15,8 +15,8 @@
 //! We then call [`task::run_first_task()`] and for the first time go to
 //! userspace.
 
-#![allow(missing_docs)]
 #![deny(warnings)]
+#![allow(missing_docs)]
 #![no_std]
 #![no_main]
 #![feature(panic_info_message)]
@@ -72,7 +72,7 @@ fn kernel_log_info() {
     }
     logging::init();
     println!("[kernel] Hello, world!");
-    trace!(
+    debug!(
         "[kernel] .text [{:#x}, {:#x})",
         stext as usize,
         etext as usize
@@ -81,15 +81,15 @@ fn kernel_log_info() {
         "[kernel] .rodata [{:#x}, {:#x})",
         srodata as usize, erodata as usize
     );
-    info!(
+    debug!(
         "[kernel] .data [{:#x}, {:#x})",
         sdata as usize, edata as usize
     );
-    warn!(
+    debug!(
         "[kernel] boot_stack top=bottom={:#x}, lower_bound={:#x}",
         boot_stack_top as usize, boot_stack_lower_bound as usize
     );
-    error!("[kernel] .bss [{:#x}, {:#x})", sbss as usize, ebss as usize);
+    debug!("[kernel] .bss [{:#x}, {:#x})", sbss as usize, ebss as usize);
 }
 
 #[no_mangle]
