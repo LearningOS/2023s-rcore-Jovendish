@@ -63,12 +63,22 @@ impl MemorySet {
             None,
         );
     }
+    ///
+    pub fn remove_framed_area(&mut self, start_va: VirtAddr, end_va: VirtAddr) {
+        self.remove(MapArea::new(start_va, end_va, MapType::Framed, MapPermission::empty()));
+    }
     fn push(&mut self, mut map_area: MapArea, data: Option<&[u8]>) {
         map_area.map(&mut self.page_table);
         if let Some(data) = data {
             map_area.copy_data(&mut self.page_table, data);
         }
         self.areas.push(map_area);
+    }
+    fn remove(&mut self, mut map_area: MapArea) {
+        map_area.unmap(&mut self.page_table);
+
+        self.areas
+            .retain(|area| area.vpn_range.get_start() != map_area.vpn_range.get_start());
     }
     /// Mention that trampoline is not collected by areas.
     fn map_trampoline(&mut self) {
