@@ -8,14 +8,10 @@ use crate::sbi::set_timer;
 use crate::syscall::TimeVal;
 use crate::task::current_user_token;
 use riscv::register::time;
-/// The number of ticks per second
-const TICKS_PER_SEC: usize = 100;
-#[allow(dead_code)]
-/// The number of milliseconds per second
-const MSEC_PER_SEC: usize = 1000;
-/// The number of microseconds per second
-#[allow(dead_code)]
-const MICRO_PER_SEC: usize = 1_000_000;
+const TICKS_PER_SEC   : usize = 100;
+const MILLI_PER_SEC   : usize = 1000;
+const MICRO_PER_SEC   : usize = 1000000;
+const CLOCKS_PER_MSEC : usize = CLOCK_FREQ / MILLI_PER_SEC;
 
 /// Get the current time in ticks
 pub fn get_time() -> usize {
@@ -25,13 +21,13 @@ pub fn get_time() -> usize {
 /// get current time in milliseconds
 #[allow(dead_code)]
 pub fn get_time_ms() -> usize {
-    time::read() / (CLOCK_FREQ / MSEC_PER_SEC)
+    get_time() / CLOCKS_PER_MSEC
 }
 
 /// get current time in microseconds
 #[allow(dead_code)]
 pub fn get_time_us() -> usize {
-    time::read() / (CLOCK_FREQ / MICRO_PER_SEC)
+    get_time_ms() * MILLI_PER_SEC
 }
 
 pub fn get_timeval(ts: *mut TimeVal) {
@@ -41,7 +37,7 @@ pub fn get_timeval(ts: *mut TimeVal) {
     let timeval_ptr = buffers[0].as_mut_ptr() as *mut TimeVal;
     let mut timeval = unsafe { &mut *timeval_ptr };
 
-    timeval.sec  = get_time_ms() / MSEC_PER_SEC;
+    timeval.sec  = get_time_ms() / MILLI_PER_SEC;
     timeval.usec = get_time_us() % MICRO_PER_SEC;
 }
 
