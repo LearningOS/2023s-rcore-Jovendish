@@ -60,6 +60,15 @@ impl MemorySet {
             None,
         );
     }
+    fn remove(&mut self, mut map_area: MapArea) {
+        map_area.unmap(&mut self.page_table);
+
+        self.areas
+            .retain(|area| area.vpn_range.get_start() != map_area.vpn_range.get_start());
+    }
+    pub fn remove_framed_area(&mut self, start_va: VirtAddr, end_va: VirtAddr) {
+        self.remove(MapArea::new(start_va, end_va, MapType::Framed, MapPermission::empty()));
+    }
     /// remove a area
     pub fn remove_area_with_start_vpn(&mut self, start_vpn: VirtPageNum) {
         if let Some((idx, area)) = self
