@@ -23,13 +23,17 @@ impl TaskManager {
     }
     /// Take a process out of the ready queue
     pub fn fetch(&mut self) -> Option<Arc<TaskControlBlock>> {
-        if let Some(index) = self
+        if let Some((index, task)) = self
             .ready_queue
             .iter()
             .enumerate()
             .min_by_key(|(_, task)| task.inner_exclusive_access().stride)
-            .map(|(index, _)| index)
+            .map(|(index, task)| (index, task))
         {
+            let mut inner = task.inner_exclusive_access();
+            inner.stride += inner.pass;
+            drop(inner);
+
             Some(Arc::clone(&self.ready_queue.remove(index)))
         } else {
             None
