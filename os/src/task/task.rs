@@ -285,6 +285,11 @@ impl TaskControlBlock {
                     program_brk: user_sp,
                     stride: 0,
                     pass: BIG_STRIDE / 16,
+                    fd_table: vec![
+                        Some(Arc::new(Stdin)),
+                        Some(Arc::new(Stdout)),
+                        Some(Arc::new(Stdout)),
+                    ]
                 })
             },
         });
