@@ -25,6 +25,12 @@ pub struct ProcessControlBlock {
 
 /// Inner of Process Control Block
 pub struct ProcessControlBlockInner {
+    ///
+    pub deadlock_detect: bool,
+    pub mutex_alloc: Vec<Option<usize>>,
+    pub sem_avail: Vec<usize>,
+    pub sem_alloc: Vec<Vec<usize>>,
+    pub sem_need: Vec<Vec<usize>>,
     /// is zombie?
     pub is_zombie: bool,
     /// memory set(address space)
@@ -100,6 +106,11 @@ impl ProcessControlBlock {
             pid: pid_handle,
             inner: unsafe {
                 UPSafeCell::new(ProcessControlBlockInner {
+                    deadlock_detect: false,
+                    mutex_alloc: Vec::new(),
+                    sem_avail: Vec::new(),
+                    sem_alloc: Vec::new(),
+                    sem_need: Vec::new(),
                     is_zombie: false,
                     memory_set,
                     parent: None,
@@ -144,6 +155,11 @@ impl ProcessControlBlock {
         // add main thread to the process
         let mut process_inner = process.inner_exclusive_access();
         process_inner.tasks.push(Some(Arc::clone(&task)));
+
+        process_inner.sem_avail.resize(16, 0);
+        process_inner.sem_alloc.resize_with(16, || vec![0; 16]);
+        process_inner.sem_need.resize_with(16, || vec![0; 16]);
+
         drop(process_inner);
         insert_into_pid2process(process.getpid(), Arc::clone(&process));
         // add main thread to scheduler
@@ -233,6 +249,11 @@ impl ProcessControlBlock {
             pid,
             inner: unsafe {
                 UPSafeCell::new(ProcessControlBlockInner {
+                    deadlock_detect: false,
+                    mutex_alloc: Vec::new(),
+                    sem_avail: Vec::new(),
+                    sem_alloc: Vec::new(),
+                    sem_need: Vec::new(),
                     is_zombie: false,
                     memory_set,
                     parent: Some(Arc::downgrade(self)),
@@ -267,6 +288,9 @@ impl ProcessControlBlock {
         // attach task to child process
         let mut child_inner = child.inner_exclusive_access();
         child_inner.tasks.push(Some(Arc::clone(&task)));
+        child_inner.sem_avail.resize(16, 0);
+        child_inner.sem_alloc.resize_with(16, || vec![0; 16]);
+        child_inner.sem_need.resize_with(16, || vec![0; 16]);
         drop(child_inner);
         // modify kstack_top in trap_cx of this thread
         let task_inner = task.inner_exclusive_access();
