@@ -124,7 +124,18 @@ pub fn open_file(name: &str, flags: OpenFlags) -> Option<Arc<OSInode>> {
     }
 }
 
+pub fn linkat(old_name: &str, new_name: &str) -> isize {
+    ROOT_INODE.linkat(old_name, new_name)
+}
+
+pub fn unlinkat(name: &str) -> isize {
+    ROOT_INODE.unlinkat(name)
+}
+
 impl File for OSInode {
+    fn info(&self) -> (usize, usize) {
+        self.inner.exclusive_access().inode.info()
+    }
     fn readable(&self) -> bool {
         self.readable
     }

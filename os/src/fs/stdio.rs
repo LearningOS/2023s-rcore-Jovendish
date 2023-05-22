@@ -11,6 +11,9 @@ pub struct Stdin;
 pub struct Stdout;
 
 impl File for Stdin {
+    fn info(&self) -> (usize, usize) {
+        (0, 0)
+    }
     fn readable(&self) -> bool {
         true
     }
@@ -42,6 +45,9 @@ impl File for Stdin {
 }
 
 impl File for Stdout {
+    fn info(&self) -> (usize, usize) {
+        (0, 0)
+    }
     fn readable(&self) -> bool {
         false
     }
